@@ -12,12 +12,18 @@ import (
 )
 
 type Status struct {
+	Height      int64    `json:"height"`
 	Total       sdk.Coin `json:"total"`
 	Bonded      sdk.Coin `json:"bonded"`
 	Circulating sdk.Coin `json:"circulating"`
 }
 
 func getStatus(ctx context.Context, cctx client.Context, denom string, locked sdk.Int) (Status, error) {
+
+	status, err := cctx.Client.Status(context.Background())
+	if err != nil {
+		return Status{}, err
+	}
 
 	// akash query bank total
 	bclient := banktypes.NewQueryClient(cctx)
@@ -38,12 +44,14 @@ func getStatus(ctx context.Context, cctx client.Context, denom string, locked sd
 
 	if ctotal.GT(locked) {
 		return Status{
+			Height:      status.SyncInfo.LatestBlockHeight,
 			Total:       sdk.NewCoin(denom, ctotal),
 			Bonded:      sdk.NewCoin(denom, cbonded),
 			Circulating: sdk.NewCoin(denom, ctotal.Sub(locked)),
 		}, nil
 	} else {
 		return Status{
+			Height:      status.SyncInfo.LatestBlockHeight,
 			Total:       sdk.NewCoin(denom, ctotal),
 			Bonded:      sdk.NewCoin(denom, cbonded),
 			Circulating: sdk.NewCoin(denom, sdk.NewInt(0)),

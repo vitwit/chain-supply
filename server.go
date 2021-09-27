@@ -36,7 +36,7 @@ func (c *serverCmd) Run(ctx *runctx) error {
 				return
 			}
 
-			w.Header().Add("Content-Type", "application/javascript")
+			w.Header().Add("Content-Type", "application/json")
 			w.Write(buf)
 		} else {
 			denom := r.URL.Query().Get("denom")
