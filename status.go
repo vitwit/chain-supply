@@ -36,11 +36,19 @@ func getStatus(ctx context.Context, cctx client.Context, denom string, locked sd
 	ctotal := bres.Supply.AmountOf(denom)
 	cbonded := sres.Pool.BondedTokens
 
-	return Status{
-		Total:       sdk.NewCoin(denom, ctotal),
-		Bonded:      sdk.NewCoin(denom, cbonded),
-		Circulating: sdk.NewCoin(denom, ctotal.Sub(locked)),
-	}, nil
+	if ctotal.GT(locked) {
+		return Status{
+			Total:       sdk.NewCoin(denom, ctotal),
+			Bonded:      sdk.NewCoin(denom, cbonded),
+			Circulating: sdk.NewCoin(denom, ctotal.Sub(locked)),
+		}, nil
+	} else {
+		return Status{
+			Total:       sdk.NewCoin(denom, ctotal),
+			Bonded:      sdk.NewCoin(denom, cbonded),
+			Circulating: sdk.NewCoin(denom, sdk.NewInt(0)),
+		}, nil
+	}
 }
 
 func createContext() client.Context {
